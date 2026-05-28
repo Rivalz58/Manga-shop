@@ -54,7 +54,7 @@ class CarteRepository extends DocumentRepository
 
         $qb->sort($sort, $order === 'desc' ? -1 : 1);
 
-        $total = (clone $qb)->getQuery()->count();
+        $total = (int) (clone $qb)->count()->getQuery()->execute();
 
         $qb->skip(($page - 1) * $limit)->limit($limit);
 
