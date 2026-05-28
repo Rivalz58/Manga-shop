@@ -1,0 +1,125 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}PokéShop — Accueil{% endblock %}
+
+{% block body %}
+
+{# Hero Section #}
+<section class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 fw-800 mb-3" style="font-weight:800">
+            ⚡ Bienvenue sur <span style="color:#FFCB05">PokéShop</span>
+        </h1>
+        <p class="lead mb-4 text-white-75">Des milliers de cartes Pokémon à l'unité — trouvez la carte qui manque à votre collection !</p>
+        <a href="{{ path('app_carte_index') }}" class="btn btn-pokemon btn-lg me-2">
+            <i class="bi bi-grid me-2"></i>Voir le catalogue
+        </a>
+        <a href="{{ path('app_carte_index') }}?rarete=Ultra+Rare" class="btn btn-outline-light btn-lg">
+            ✨ Cartes Ultra Rares
+        </a>
+    </div>
+</section>
+
+{# Cartes récentes #}
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Nouveautés en stock</h2>
+            <a href="{{ path('app_carte_index') }}" class="btn btn-outline-secondary btn-sm">Voir tout →</a>
+        </div>
+        <div class="row g-3">
+            {% for carte in cartesRecentes %}
+            <div class="col-6 col-md-4 col-lg-3">
+                {% include 'components/carte_card.html.twig' with {carte: carte} %}
+            </div>
+            {% else %}
+            <div class="col-12 text-center text-muted py-5">Aucune carte disponible pour l'instant.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{# Cartes Ultra Rares #}
+{% if cartesUltraRares|length > 0 %}
+<section class="py-5 bg-white">
+    <div class="container">
+        <h2 class="fw-bold mb-4"><i class="bi bi-stars text-warning me-2"></i>Ultra Rares en vedette</h2>
+        <div class="row g-3">
+            {% for carte in cartesUltraRares %}
+            <div class="col-6 col-md-4 col-lg-3">
+                {% include 'components/carte_card.html.twig' with {carte: carte} %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# Séries disponibles #}
+{% if series|length > 0 %}
+<section class="py-5">
+    <div class="container">
+        <h2 class="fw-bold mb-4"><i class="bi bi-collection me-2 text-primary"></i>Séries disponibles</h2>
+        <div class="row g-3">
+            {% for serie in series %}
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{{ path('app_carte_index') }}?serie={{ serie.id }}" class="text-decoration-none">
+                    <div class="card card-pokemon text-center p-3 h-100">
+                        <div class="fw-bold small">{{ serie.nom }}</div>
+                        <div class="text-muted" style="font-size:.75rem">{{ serie.annee }}</div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# Stats par type - Section informative #}
+<section class="py-5 bg-white">
+    <div class="container">
+        <h2 class="fw-bold mb-4"><i class="bi bi-bar-chart-fill me-2 text-success"></i>Notre collection par type</h2>
+        <div class="row g-2">
+            {% for stat in statsParType %}
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="card text-center p-2">
+                    <span class="type-badge type-{{ stat._id }} mb-1">{{ stat._id }}</span>
+                    <div class="fw-bold">{{ stat.count }} cartes</div>
+                    <div class="text-muted small">{{ stat.prixMoyen|number_format(2, ',', ' ') }} € moy.</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{# Avantages #}
+<section class="py-5" style="background:linear-gradient(135deg,#1a1a2e,#0f3460);color:white">
+    <div class="container">
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <i class="bi bi-shield-check display-4 text-warning"></i>
+                <h5 class="mt-2">Cartes authentiques</h5>
+                <p class="small text-white-50">Toutes nos cartes sont vérifiées et certifiées authentiques.</p>
+            </div>
+            <div class="col-md-3">
+                <i class="bi bi-truck display-4 text-warning"></i>
+                <h5 class="mt-2">Livraison soignée</h5>
+                <p class="small text-white-50">Emballage protégé pour chaque commande.</p>
+            </div>
+            <div class="col-md-3">
+                <i class="bi bi-grid-3x3-gap display-4 text-warning"></i>
+                <h5 class="mt-2">Grand catalogue</h5>
+                <p class="small text-white-50">Des centaines de cartes de toutes les séries.</p>
+            </div>
+            <div class="col-md-3">
+                <i class="bi bi-arrow-return-left display-4 text-warning"></i>
+                <h5 class="mt-2">Retours faciles</h5>
+                <p class="small text-white-50">14 jours pour changer d'avis.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

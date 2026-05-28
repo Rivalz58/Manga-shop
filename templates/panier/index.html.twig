@@ -1,0 +1,159 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mon Panier — PokéShop{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <h1 class="fw-bold mb-4"><i class="bi bi-cart3 me-2"></i>Mon Panier</h1>
+
+    {% if items|length > 0 %}
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Carte</th>
+                                <th class="text-center">Prix unit.</th>
+                                <th class="text-center">Quantité</th>
+                                <th class="text-center">Sous-total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="panierBody">
+                            {% for item in items %}
+                            <tr id="ligne-{{ item.carte.id }}">
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="{{ asset('uploads/cards/' ~ item.carte.image) }}"
+                                             width="60" height="60" style="object-fit:contain"
+                                             onerror="this.src='https://via.placeholder.com/60'">
+                                        <div>
+                                            <a href="{{ path('app_carte_show', {id: item.carte.id}) }}"
+                                               class="fw-bold text-dark text-decoration-none">{{ item.carte.nom }}</a>
+                                            <div class="small text-muted">
+                                                <span class="type-badge type-{{ item.carte.typePokemon }}">{{ item.carte.typePokemon }}</span>
+                                                {{ item.carte.rarete }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center fw-bold">{{ item.carte.prix|number_format(2, ',', ' ') }} €</td>
+                                <td class="text-center">
+                                    <div class="input-group input-group-sm justify-content-center" style="max-width:110px;margin:0 auto">
+                                        <button class="btn btn-outline-secondary" onclick="modifierQty('{{ item.carte.id }}', {{ item.quantite - 1 }})">−</button>
+                                        <input type="number" class="form-control text-center qty-input" value="{{ item.quantite }}"
+                                               min="0" max="{{ item.carte.stock }}" id="qty-{{ item.carte.id }}"
+                                               onchange="modifierQty('{{ item.carte.id }}', this.value)">
+                                        <button class="btn btn-outline-secondary" onclick="modifierQty('{{ item.carte.id }}', {{ item.quantite + 1 }})">+</button>
+                                    </div>
+                                </td>
+                                <td class="text-center fw-bold text-danger" id="sous-total-{{ item.carte.id }}">
+                                    {{ item.sousTotal|number_format(2, ',', ' ') }} €
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-danger" onclick="retirerCarte('{{ item.carte.id }}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <a href="{{ path('app_carte_index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Continuer les achats
+                </a>
+                <button class="btn btn-outline-danger" onclick="viderPanier()">
+                    <i class="bi bi-trash me-1"></i>Vider le panier
+                </button>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top:80px">
+                <div class="card-header bg-danger text-white fw-bold fs-5">
+                    <i class="bi bi-receipt me-2"></i>Récapitulatif
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm mb-3">
+                        <tr><td>Articles</td><td class="text-end fw-bold" id="totalHT">{{ total|number_format(2, ',', ' ') }} €</td></tr>
+                        <tr><td>Livraison</td><td class="text-end text-success">Gratuite</td></tr>
+                        <tr class="table-active fw-bold fs-5">
+                            <td>Total</td><td class="text-end text-danger" id="totalTTC">{{ total|number_format(2, ',', ' ') }} €</td>
+                        </tr>
+                    </table>
+                    {% if app.user %}
+                        <a href="{{ path('app_commande_valider') }}" class="btn btn-pokemon w-100 btn-lg">
+                            <i class="bi bi-credit-card me-2"></i>Commander
+                        </a>
+                    {% else %}
+                        <a href="{{ path('app_login') }}" class="btn btn-pokemon w-100 btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter pour commander
+                        </a>
+                        <div class="text-center mt-2 small text-muted">
+                            Pas de compte ? <a href="{{ path('app_register') }}">S'inscrire</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-cart-x display-1 text-muted"></i>
+        <h3 class="mt-3 text-muted">Votre panier est vide</h3>
+        <p class="text-muted">Commencez à ajouter des cartes à votre panier !</p>
+        <a href="{{ path('app_carte_index') }}" class="btn btn-pokemon btn-lg mt-2">
+            <i class="bi bi-grid me-2"></i>Voir le catalogue
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+async function retirerCarte(id) {
+    try {
+        const res = await fetch(`/panier/retirer/${id}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('ligne-' + id)?.remove();
+            updatePanierCount(data.nombreArticles);
+            updateTotal(data.total);
+            if (data.nombreArticles === 0) location.reload();
+        }
+    } catch(e) {}
+}
+
+async function modifierQty(id, quantite) {
+    try {
+        const fd = new FormData(); fd.append('quantite', quantite);
+        const res = await fetch(`/panier/modifier/${id}`, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+            updatePanierCount(data.nombreArticles);
+            updateTotal(data.total);
+            if (quantite <= 0) { document.getElementById('ligne-' + id)?.remove(); if (data.nombreArticles === 0) location.reload(); }
+            else { document.getElementById('qty-' + id).value = quantite; }
+        } else { alert(data.message); location.reload(); }
+    } catch(e) {}
+}
+
+async function viderPanier() {
+    if (!confirm('Vider le panier ?')) return;
+    const res = await fetch('/panier/vider', { method: 'POST' });
+    location.reload();
+}
+
+function updateTotal(t) {
+    const fmt = parseFloat(t).toFixed(2).replace('.', ',') + ' €';
+    document.getElementById('totalHT').textContent = fmt;
+    document.getElementById('totalTTC').textContent = fmt;
+}
+</script>
+{% endblock %}

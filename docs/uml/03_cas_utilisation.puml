@@ -1,0 +1,87 @@
+@startuml Diagramme de Cas d'utilisation - PokéShop
+
+skinparam actorStyle awesome
+left to right direction
+title Diagramme de Cas d'Utilisation — PokéShop
+
+actor "Visiteur" as V
+actor "Client (Utilisateur)" as C
+actor "Administrateur" as A
+actor "PokeAPI (externe)" as API
+
+C --|> V : hérite
+A --|> C : hérite
+
+rectangle "PokéShop — Système" {
+
+    package "Catalogue" {
+        usecase "Consulter le catalogue" as UC1
+        usecase "Filtrer les cartes\n(type, rareté, série, prix)" as UC2
+        usecase "Rechercher une carte\n(autocomplete AJAX)" as UC3
+        usecase "Voir la fiche détaillée\nd'une carte" as UC4
+        usecase "Voir les infos Pokédex\n(PokeAPI)" as UC5
+        usecase "Laisser un avis" as UC6
+    }
+
+    package "Panier & Commande" {
+        usecase "Gérer le panier\n(AJAX: ajout/modif/suppression)" as UC7
+        usecase "Créer un compte" as UC8
+        usecase "Se connecter" as UC9
+        usecase "Passer une commande" as UC10
+        usecase "Voir mes commandes" as UC11
+        usecase "Voir mon profil" as UC12
+    }
+
+    package "Administration" {
+        usecase "Accéder au dashboard\n(stats MongoDB)" as UC13
+        usecase "CRUD Cartes\n(avec upload image)" as UC14
+        usecase "CRUD Séries" as UC15
+        usecase "Gérer les commandes\n(statut AJAX)" as UC16
+        usecase "Voir agrégations\n(Map Reduce, CA)" as UC17
+    }
+}
+
+' Visiteur
+V --> UC1
+V --> UC2
+V --> UC3
+V --> UC4
+V --> UC5 : <<include>>
+V --> UC8
+V --> UC9
+UC3 ..> UC1 : <<include>>
+
+' Client authentifié
+C --> UC6
+C --> UC7
+C --> UC10
+C --> UC11
+C --> UC12
+UC10 ..> UC7 : <<include>>
+UC10 ..> UC9 : <<extend>> si non connecté
+
+' Admin
+A --> UC13
+A --> UC14
+A --> UC15
+A --> UC16
+A --> UC17
+UC17 ..> UC13 : <<include>>
+
+' Relation avec API externe
+UC5 --> API : appel cURL
+
+note right of UC14
+  Upload fichier :
+  JPEG, PNG, WebP (max 2Mo)
+  FileUploadService
+end note
+
+note right of UC7
+  3 fonctionnalités AJAX :
+  - Ajout au panier
+  - Modification quantité
+  - Suppression du panier
+end note
+
+@enduml

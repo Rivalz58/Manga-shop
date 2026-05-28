@@ -1,0 +1,206 @@
+@startuml Diagramme de Classes - PokéShop
+
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FEFEFE
+title Diagramme de Classes UML2 — PokéShop
+
+' ===================== DOCUMENTS (Entités MongoDB) =====================
+
+package "Document (Modèle ODM)" {
+
+    class Carte {
+        - id: string
+        - nom: string
+        - typePokemon: string
+        - rarete: string
+        - prix: float
+        - stock: int
+        - description: string
+        - image: string
+        - pv: int
+        - numeroPokedex: int
+        - createdAt: DateTime
+        --
+        + isEnStock(): bool
+        + getNoteMoyenne(): float
+        + addAvis(avis: Avis): static
+        + {static} RARETES: array
+        + {static} TYPES: array
+    }
+
+    class Serie {
+        - id: string
+        - nom: string
+        - annee: int
+        - description: string
+        - image: string
+        - createdAt: DateTime
+    }
+
+    class Avis {
+        - id: string
+        - auteurNom: string
+        - auteurEmail: string
+        - note: int
+        - commentaire: string
+        - createdAt: DateTime
+    }
+
+    class Utilisateur {
+        - id: string
+        - email: string
+        - password: string
+        - prenom: string
+        - nom: string
+        - adresse: string
+        - telephone: string
+        - roles: array
+        - actif: bool
+        - createdAt: DateTime
+        --
+        + getUserIdentifier(): string
+        + getNomComplet(): string
+        + isAdmin(): bool
+        + eraseCredentials(): void
+    }
+
+    class Commande {
+        - id: string
+        - clientNom: string
+        - clientEmail: string
+        - adresseLivraison: string
+        - total: float
+        - statut: string
+        - reference: string
+        - noteLivraison: string
+        - createdAt: DateTime
+        --
+        + calculerTotal(): void
+        + getNombreLignes(): int
+        + {static} STATUTS: array
+    }
+
+    class LigneCommande {
+        - id: string
+        - carteNom: string
+        - carteImage: string
+        - quantite: int
+        - prixUnitaire: float
+        --
+        + getSousTotal(): float
+    }
+
+}
+
+' ===================== REPOSITORY =====================
+
+package "Repository (Pattern Repository)" {
+    class CarteRepository {
+        + findWithFilters(filters, sort, order, page, limit): array
+        + findByRarete(rarete): array
+        + getStatistiquesParType(): array
+        + getTopCartesByRarete(): array
+        + getChiffreAffairesPotentielParType(): array
+        + getDistributionNotesParRarete(): array
+        + searchByNom(query): array
+    }
+
+    class CommandeRepository {
+        + findByUtilisateur(user): array
+        + findWithFilters(filters, page, limit): array
+        + getChiffreAffairesParMois(): array
+        + getStatistiquesGlobales(): array
+        + countByStatut(statut): int
+    }
+
+    class UtilisateurRepository {
+        + findByEmail(email): Utilisateur
+        + findAllActifs(): array
+        + findWithFilters(filters, page, limit): array
+    }
+
+    class SerieRepository {
+        + findAllOrderedByAnnee(): array
+    }
+}
+
+' ===================== SERVICE =====================
+
+package "Service (Couche métier)" {
+    class CartService {
+        - SESSION_KEY: string
+        + ajouterCarte(id, quantite): void
+        + retirerCarte(id): void
+        + modifierQuantite(id, quantite): void
+        + vider(): void
+        + getNombreArticles(): int
+        + getPanierAvecDetails(): array
+    }
+
+    class StockService {
+        + reserverStock(commande): bool
+        + libererStock(commande): void
+        + verifierDisponibilite(carte, quantite): bool
+    }
+
+    class FileUploadService {
+        + upload(file, prefix): string
+        + delete(filename): void
+    }
+
+    class PokemonApiService {
+        + getPokemonInfo(nomOuId): array
+        + getPokemonSprite(nomOuId): string
+        + getPokemonBaseStats(nomOuId): array
+    }
+}
+
+' ===================== FACTORY =====================
+
+package "Factory (Pattern Factory)" {
+    class CommandeFactory {
+        + creerDepuisPanier(nom, email, adresse, user): Commande
+    }
+}
+
+' ===================== SECURITY =====================
+
+package "Security" {
+    class MongoDBUserProvider {
+        + loadUserByIdentifier(identifier): UserInterface
+        + refreshUser(user): UserInterface
+        + supportsClass(class): bool
+    }
+}
+
+' ===================== RELATIONS =====================
+
+Carte "1" o-- "1" Serie : référence
+Carte "1" *-- "0..*" Avis : embedded (1:N)
+Commande "1" *-- "1..*" LigneCommande : embedded (1:N)
+Commande "0..*" --> "0..1" Utilisateur : référence
+LigneCommande "0..*" --> "1" Carte : référence
+
+CarteRepository ..> Carte : gère
+CommandeRepository ..> Commande : gère
+UtilisateurRepository ..> Utilisateur : gère
+SerieRepository ..> Serie : gère
+
+CartService ..> Carte : utilise
+CommandeFactory ..> Commande : crée
+CommandeFactory ..> CartService : utilise
+StockService ..> Commande : utilise
+StockService ..> Carte : modifie
+
+MongoDBUserProvider ..> Utilisateur : charge
+
+Utilisateur ..|> "UserInterface" : implémente
+Utilisateur ..|> "PasswordAuthenticatedUserInterface" : implémente
+
+note bottom of LigneCommande
+  Document embedded (pas de collection propre).
+  carteNom et carteImage sont dénormalisés
+  pour préserver l'historique si la carte est modifiée.
+end note
+
+@enduml

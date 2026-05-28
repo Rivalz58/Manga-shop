@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+{% block title %}Commander — PokéShop{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <h1 class="fw-bold mb-4"><i class="bi bi-credit-card me-2"></i>Finaliser la commande</h1>
+    <div class="row g-4">
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold bg-light"><i class="bi bi-geo-alt me-2"></i>Informations de livraison</div>
+                <div class="card-body">
+                    {{ form_start(form) }}
+                    {{ form_row(form.clientNom) }}
+                    {{ form_row(form.clientEmail) }}
+                    {{ form_row(form.adresseLivraison) }}
+                    {{ form_row(form.noteLivraison) }}
+                    <button type="submit" class="btn btn-pokemon w-100 btn-lg mt-2">
+                        <i class="bi bi-check-lg me-2"></i>Confirmer la commande
+                    </button>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold bg-light"><i class="bi bi-receipt me-2"></i>Récapitulatif</div>
+                <div class="card-body p-0">
+                    {% for item in items %}
+                    <div class="d-flex align-items-center gap-2 p-3 border-bottom">
+                        <img src="{{ asset('uploads/cards/' ~ item.carte.image) }}" width="45" height="45" style="object-fit:contain"
+                             onerror="this.src='https://via.placeholder.com/45'">
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold small">{{ item.carte.nom }}</div>
+                            <div class="text-muted" style="font-size:.75rem">× {{ item.quantite }}</div>
+                        </div>
+                        <div class="fw-bold text-danger small">{{ item.sousTotal|number_format(2, ',', ' ') }} €</div>
+                    </div>
+                    {% endfor %}
+                    <div class="p-3 d-flex justify-content-between fw-bold fs-5">
+                        <span>Total</span>
+                        <span class="text-danger">{{ total|number_format(2, ',', ' ') }} €</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

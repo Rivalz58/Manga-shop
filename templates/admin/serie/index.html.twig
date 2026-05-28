@@ -1,0 +1,39 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Séries — Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="bi bi-collection me-2"></i>Séries</h2>
+    <a href="{{ path('app_admin_serie_new') }}" class="btn btn-success"><i class="bi bi-plus-lg me-1"></i>Nouvelle série</a>
+</div>
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr><th>Nom</th><th class="text-center">Année</th><th>Description</th><th class="text-center">Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for serie in series %}
+                <tr>
+                    <td class="fw-semibold">{{ serie.nom }}</td>
+                    <td class="text-center">{{ serie.annee }}</td>
+                    <td class="text-muted small">{{ serie.description|length > 60 ? serie.description[:60] ~ '…' : serie.description }}</td>
+                    <td class="text-center">
+                        <a href="{{ path('app_admin_serie_edit', {id: serie.id}) }}" class="btn btn-sm btn-outline-primary me-1">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="POST" action="{{ path('app_admin_serie_delete', {id: serie.id}) }}" class="d-inline"
+                              onsubmit="return confirm('Supprimer {{ serie.nom }} ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_serie_' ~ serie.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center text-muted py-4">Aucune série.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

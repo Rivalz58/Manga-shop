@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+{% block title %}Connexion — PokéShop{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white text-center py-3">
+                    <h4 class="mb-0 fw-bold"><i class="bi bi-person-circle me-2"></i>Connexion</h4>
+                </div>
+                <div class="card-body p-4">
+                    {% if error %}
+                    <div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                    {% endif %}
+                    <form method="POST" action="{{ path('app_login') }}">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ lastUsername }}" required autofocus>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Mot de passe</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="_remember_me" class="form-check-input" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">Se souvenir de moi</label>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100 fw-bold">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+                        </button>
+                    </form>
+                    <hr>
+                    <div class="text-center">
+                        <p class="mb-0">Pas encore de compte ? <a href="{{ path('app_register') }}" class="fw-bold text-danger">Créer un compte</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

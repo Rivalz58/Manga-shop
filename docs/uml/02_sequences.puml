@@ -1,0 +1,120 @@
+@startuml Séquence 1 - Ajout au panier (AJAX)
+
+title Scénario 1 : Ajout d'une carte au panier (AJAX)
+
+actor Utilisateur
+participant "Browser (JS)" as JS
+participant "PanierController" as PC
+participant "CartService" as CS
+participant "DocumentManager" as DM
+participant "MongoDB" as DB
+
+Utilisateur -> JS : Clique "Ajouter au panier"
+JS -> PC : POST /panier/ajouter/{id}\n(Fetch API, body: quantite=1)
+PC -> DM : find(Carte, id)
+DM -> DB : db.cartes.findOne({_id: id})
+DB --> DM : Carte | null
+DM --> PC : Carte | null
+alt Carte non trouvée ou stock = 0
+    PC --> JS : JSON {success: false, message: "Indisponible"} [400]
+    JS -> Utilisateur : Affiche message d'erreur
+else Carte disponible
+    PC -> CS : ajouterCarte(id, quantite)
+    CS -> CS : getSession() → panier[]
+    CS -> CS : panier[id] += quantite
+    CS -> CS : session.set('panier', panier)
+    PC -> CS : getNombreArticles()
+    CS --> PC : int count
+    PC --> JS : JSON {success: true, nombreArticles: N, message: "Ajouté !"}
+    JS -> JS : updatePanierCount(N)
+    JS -> Utilisateur : Badge panier mis à jour + feedback visuel
+end
+
+@enduml
+
+@startuml Séquence 2 - Passage de commande
+
+title Scénario 2 : Validation d'une commande
+
+actor Client
+participant "CommandeController" as CC
+participant "CommandeFactory" as CF
+participant "CartService" as CS
+participant "StockService" as SS
+participant "DocumentManager" as DM
+participant "MongoDB" as DB
+
+Client -> CC : GET /commande/valider
+CC -> CS : getPanierAvecDetails()
+CS -> DM : find(Carte, id) pour chaque item
+DM -> DB : Requêtes MongoDB
+DB --> DM : Cartes
+CS --> CC : {items: [...], total: X}
+CC --> Client : Formulaire de livraison (CommandeType)
+
+Client -> CC : POST /commande/valider (form data)
+CC -> CF : creerDepuisPanier(nom, email, adresse, user)
+CF -> CS : getPanierAvecDetails()
+CF -> CF : Créer Commande + LigneCommandes
+CF --> CC : Commande (non persistée)
+CC -> CC : Validation du formulaire Symfony
+alt Formulaire invalide
+    CC --> Client : Formulaire avec erreurs
+else Formulaire valide
+    CC -> SS : reserverStock(commande)
+    SS -> DM : Décrémenter stock de chaque carte
+    DM -> DB : updateMany(...)
+    alt Stock insuffisant
+        SS --> CC : false
+        CC --> Client : Flash "Stock insuffisant"
+        CC --> Client : Redirect /panier
+    else Stock disponible
+        SS --> CC : true
+        DM -> DB : db.commandes.insertOne(commande)
+        CC -> CS : vider()
+        CC --> Client : Redirect /commande/confirmation/{id}
+    end
+end
+
+@enduml
+
+@startuml Séquence 3 - Authentification
+
+title Scénario 3 : Connexion utilisateur
+
+actor Utilisateur
+participant "SecurityController" as SC
+participant "Symfony Security" as SF
+participant "MongoDBUserProvider" as MP
+participant "UtilisateurRepository" as UR
+participant "MongoDB" as DB
+
+Utilisateur -> SC : POST /connexion\n(email, password, _csrf_token)
+SC -> SF : Vérification CSRF token
+SF --> SC : Token valide
+SF -> MP : loadUserByIdentifier(email)
+MP -> UR : findByEmail(email)
+UR -> DB : db.utilisateurs.findOne({email: email})
+DB --> UR : Utilisateur | null
+alt Utilisateur non trouvé
+    UR --> MP : null
+    MP -> MP : throw UserNotFoundException
+    SF --> Utilisateur : Flash "Email ou mot de passe invalide"
+else Utilisateur trouvé
+    UR --> MP : Utilisateur
+    alt Compte inactif
+        MP -> MP : throw UserNotFoundException("Compte désactivé")
+        SF --> Utilisateur : Flash "Compte désactivé"
+    else Compte actif
+        MP --> SF : Utilisateur
+        SF -> SF : Vérification BCrypt hash(password)
+        alt Mot de passe incorrect
+            SF --> Utilisateur : Flash "Email ou mot de passe invalide"
+        else Authentification réussie
+            SF -> SF : Stocker en session
+            SF --> Utilisateur : Redirect /
+        end
+    end
+end
+
+@enduml

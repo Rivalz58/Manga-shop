@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+{% block title %}Commande confirmée — PokéShop{% endblock %}
+
+{% block body %}
+<div class="container py-5 text-center">
+    <div class="card shadow-sm mx-auto" style="max-width:600px">
+        <div class="card-body py-5">
+            <i class="bi bi-check-circle-fill display-1 text-success mb-3"></i>
+            <h2 class="fw-bold text-success">Commande confirmée !</h2>
+            <p class="text-muted">Merci {{ commande.clientNom }}, votre commande a bien été enregistrée.</p>
+            <div class="alert alert-light border my-4">
+                <div><strong>Référence :</strong> {{ commande.reference }}</div>
+                <div><strong>Total :</strong> <span class="text-danger fw-bold">{{ commande.total|number_format(2, ',', ' ') }} €</span></div>
+                <div><strong>Livraison à :</strong> {{ commande.adresseLivraison }}</div>
+                <div><strong>Statut :</strong> <span class="badge bg-warning text-dark">{{ commande.statut }}</span></div>
+            </div>
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="{{ path('app_commande_mes_commandes') }}" class="btn btn-outline-danger">
+                    <i class="bi bi-bag me-1"></i>Mes commandes
+                </a>
+                <a href="{{ path('app_carte_index') }}" class="btn btn-pokemon">
+                    <i class="bi bi-grid me-1"></i>Continuer les achats
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,223 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ carte.nom }} — PokéShop{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_carte_index') }}">Catalogue</a></li>
+            <li class="breadcrumb-item active">{{ carte.nom }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        {# Image de la carte #}
+        <div class="col-md-4 text-center">
+            <div class="card shadow-sm p-4">
+                <img src="{{ asset('uploads/cards/' ~ carte.image) }}"
+                     onerror="this.src='https://via.placeholder.com/300x420/eee/999?text={{ carte.nom|url_encode }}'"
+                     alt="{{ carte.nom }}" class="img-fluid" style="max-height:400px;object-fit:contain" id="carteImage">
+                {% if pokemonData and pokemonData.sprites is defined %}
+                <button class="btn btn-sm btn-outline-secondary mt-2" onclick="toggleSprite()">
+                    <i class="bi bi-arrow-repeat me-1"></i>Voir sprite officiel
+                </button>
+                <img id="pokemonSprite" src="{{ pokemonData.sprites.front_default ?? '' }}" class="d-none img-fluid mt-2" style="max-height:120px" alt="sprite">
+                {% endif %}
+            </div>
+        </div>
+
+        {# Infos carte #}
+        <div class="col-md-5">
+            <h1 class="fw-bold">{{ carte.nom }}</h1>
+            {% if carte.serie %}
+            <div class="text-muted mb-2"><i class="bi bi-collection me-1"></i>{{ carte.serie.nom }} ({{ carte.serie.annee }})</div>
+            {% endif %}
+            <div class="d-flex gap-2 flex-wrap mb-3">
+                <span class="type-badge type-{{ carte.typePokemon }}">{{ carte.typePokemon }}</span>
+                <span class="badge
+                    {% if carte.rarete == 'Commune' %}bg-secondary
+                    {% elseif carte.rarete == 'Peu commune' %}bg-success
+                    {% elseif carte.rarete == 'Rare' %}bg-primary
+                    {% elseif carte.rarete == 'Ultra Rare' %}bg-purple
+                    {% else %}bg-danger{% endif %}"
+                    style="{% if carte.rarete == 'Ultra Rare' %}background:linear-gradient(135deg,#6f42c1,#e83e8c){% elseif carte.rarete == 'Secrète' %}background:linear-gradient(135deg,#f093fb,#f5576c){% endif %}">
+                    {{ carte.rarete }}
+                </span>
+            </div>
+
+            {% if carte.pv > 0 %}
+            <div class="mb-2"><strong>PV :</strong> {{ carte.pv }}</div>
+            {% endif %}
+            {% if carte.numeroPokedex > 0 %}
+            <div class="mb-2"><strong>N° Pokédex :</strong> #{{ carte.numeroPokedex }}</div>
+            {% endif %}
+
+            {% if carte.description %}
+            <div class="bg-light p-3 rounded mb-3">
+                <em>{{ carte.description }}</em>
+            </div>
+            {% endif %}
+
+            {# Note moyenne #}
+            {% set noteMoy = carte.noteMoyenne %}
+            {% if noteMoy > 0 %}
+            <div class="mb-3">
+                {% for i in 1..5 %}
+                    <i class="bi bi-star{% if i <= noteMoy %}-fill text-warning{% else %} text-muted{% endif %}"></i>
+                {% endfor %}
+                <span class="text-muted small">({{ carte.avis|length }} avis)</span>
+            </div>
+            {% endif %}
+
+            {# Infos PokeAPI #}
+            {% if pokemonData %}
+            <div class="alert alert-info small mb-3" id="pokemonApiInfo">
+                <strong><i class="bi bi-info-circle me-1"></i>Infos Pokédex</strong>
+                {% if pokemonData.stats is defined %}
+                <div class="row g-1 mt-1">
+                    {% for stat in pokemonData.stats %}
+                    <div class="col-6">
+                        <div class="d-flex justify-content-between">
+                            <span>{{ stat.stat.name|replace({'-': ' '})|capitalize }}</span>
+                            <strong>{{ stat.base_stat }}</strong>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        {# Achat #}
+        <div class="col-md-3">
+            <div class="card shadow-sm sticky-top" style="top:80px">
+                <div class="card-body text-center">
+                    <div class="display-5 fw-bold text-danger mb-2">{{ carte.prix|number_format(2, ',', ' ') }} €</div>
+                    {% if carte.stock > 0 %}
+                        <div class="badge bg-success mb-3">En stock ({{ carte.stock }} disponible{{ carte.stock > 1 ? 's' : '' }})</div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Quantité</label>
+                            <div class="input-group input-group-sm justify-content-center" style="max-width:130px;margin:0 auto">
+                                <button class="btn btn-outline-secondary" onclick="changeQty(-1)">−</button>
+                                <input type="number" id="quantite" class="form-control text-center" value="1" min="1" max="{{ carte.stock }}">
+                                <button class="btn btn-outline-secondary" onclick="changeQty(1)">+</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-pokemon w-100 mb-2" id="btnAjouter" onclick="ajouterAuPanier('{{ carte.id }}', '{{ carte.nom }}')">
+                            <i class="bi bi-cart-plus me-2"></i>Ajouter au panier
+                        </button>
+                        <a href="{{ path('app_panier') }}" class="btn btn-outline-danger w-100 btn-sm">
+                            <i class="bi bi-cart3 me-1"></i>Voir le panier
+                        </a>
+                    {% else %}
+                        <div class="badge bg-danger mb-3 fs-6">Rupture de stock</div>
+                        <button class="btn btn-secondary w-100" disabled>Indisponible</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Avis #}
+    <div class="row mt-5">
+        <div class="col-md-8">
+            <h3 class="fw-bold mb-4"><i class="bi bi-chat-quote me-2"></i>Avis clients</h3>
+            {% if carte.avis|length > 0 %}
+                {% for avis in carte.avis %}
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ avis.auteurNom }}</strong>
+                            <div>
+                                {% for i in 1..5 %}
+                                <i class="bi bi-star{% if i <= avis.note %}-fill text-warning{% else %} text-muted{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="mt-2 mb-1">{{ avis.commentaire }}</p>
+                        <small class="text-muted">{{ avis.createdAt|date('d/m/Y') }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-muted">Soyez le premier à donner votre avis !</div>
+            {% endif %}
+
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header fw-bold bg-light">Laisser un avis</div>
+                <div class="card-body">
+                    {{ form_start(avisForm) }}
+                    <div class="row g-3">
+                        <div class="col-md-6">{{ form_row(avisForm.auteurNom) }}</div>
+                        <div class="col-md-6">{{ form_row(avisForm.auteurEmail) }}</div>
+                        <div class="col-md-4">{{ form_row(avisForm.note) }}</div>
+                        <div class="col-12">{{ form_row(avisForm.commentaire) }}</div>
+                    </div>
+                    <button type="submit" class="btn btn-danger mt-2">
+                        <i class="bi bi-send me-1"></i>Envoyer mon avis
+                    </button>
+                    {{ form_end(avisForm) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            {% if cartesSimiliaires|length > 0 %}
+            <h5 class="fw-bold mb-3">Vous aimerez aussi</h5>
+            {% for c in cartesSimiliaires %}
+            <div class="card mb-2 shadow-sm">
+                <div class="d-flex align-items-center p-2 gap-2">
+                    <img src="{{ asset('uploads/cards/' ~ c.image) }}" width="50" height="50"
+                         style="object-fit:contain" onerror="this.src='https://via.placeholder.com/50'">
+                    <div>
+                        <div class="fw-bold small">
+                            <a href="{{ path('app_carte_show', {id: c.id}) }}" class="text-dark text-decoration-none">{{ c.nom }}</a>
+                        </div>
+                        <div class="text-danger fw-bold small">{{ c.prix|number_format(2, ',', ' ') }} €</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function changeQty(delta) {
+    const input = document.getElementById('quantite');
+    const newVal = Math.max(1, Math.min(parseInt(input.max), parseInt(input.value) + delta));
+    input.value = newVal;
+}
+
+async function ajouterAuPanier(id, nom) {
+    const btn = document.getElementById('btnAjouter');
+    const qty = document.getElementById('quantite').value;
+    btn.disabled = true;
+    try {
+        const fd = new FormData(); fd.append('quantite', qty);
+        const res = await fetch(`/panier/ajouter/${id}`, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+            updatePanierCount(data.nombreArticles);
+            btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Ajouté au panier !';
+            btn.classList.remove('btn-pokemon'); btn.classList.add('btn-success');
+            setTimeout(() => {
+                btn.innerHTML = '<i class="bi bi-cart-plus me-2"></i>Ajouter au panier';
+                btn.classList.add('btn-pokemon'); btn.classList.remove('btn-success');
+                btn.disabled = false;
+            }, 2000);
+        } else { alert(data.message); btn.disabled = false; }
+    } catch(e) { btn.disabled = false; }
+}
+
+function toggleSprite() {
+    const sprite = document.getElementById('pokemonSprite');
+    if (sprite) sprite.classList.toggle('d-none');
+}
+</script>
+{% endblock %}

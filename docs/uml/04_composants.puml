@@ -1,0 +1,126 @@
+@startuml Diagramme de Composants - PokéShop
+
+skinparam componentStyle uml2
+title Diagramme de Composants — Architecture PokéShop (Symfony 7 + MongoDB)
+
+node "Client Browser" {
+    [Bootstrap 5 UI] as BS
+    [JavaScript / Fetch API] as JS
+}
+
+node "Serveur Web (PHP 8.5)" {
+
+    package "Symfony Framework" {
+        [Router] as ROUTER
+        [Security Bundle\n(Firewall + Voters)] as SEC
+        [Form Component\n(Validation)] as FORM
+        [Twig Engine] as TWIG
+    }
+
+    package "Application (src/)" {
+
+        package "Controller" {
+            [HomeController] as HC
+            [CarteController] as CC
+            [PanierController] as PC
+            [CommandeController] as CMC
+            [SecurityController] as SC
+            [Admin/*Controller] as AC
+        }
+
+        package "Service" {
+            [CartService\n«Strategy»] as CS
+            [StockService\n«Strategy»] as SS
+            [FileUploadService] as FS
+            [PokemonApiService\n(cURL)] as PAS
+        }
+
+        package "Factory" {
+            [CommandeFactory\n«Factory»] as CF
+        }
+
+        package "Repository" {
+            [CarteRepository\n«Repository»] as CR
+            [CommandeRepository] as CMR
+            [UtilisateurRepository] as UR
+            [SerieRepository] as SR
+        }
+
+        package "Document (ODM)" {
+            [Carte] as CARTE
+            [Commande] as COMM
+            [Utilisateur] as USER
+            [Serie] as SERIE
+        }
+
+        [MongoDBUserProvider] as MUP
+    }
+}
+
+node "MongoDB 6.x" {
+    database "pokemon_shop" {
+        [cartes] as COLL_C
+        [commandes] as COLL_CMD
+        [utilisateurs] as COLL_U
+        [series] as COLL_S
+    }
+}
+
+cloud "API Externe" {
+    [PokeAPI\nhttps://pokeapi.co] as PAPI
+}
+
+' Flux principal
+BS --> ROUTER : HTTP Request
+JS --> ROUTER : Fetch/AJAX
+ROUTER --> HC
+ROUTER --> CC
+ROUTER --> PC
+ROUTER --> CMC
+ROUTER --> SC
+ROUTER --> AC
+ROUTER --> SEC
+
+HC --> CS
+CC --> CR
+PC --> CS
+CMC --> CF
+CMC --> SS
+SC --> MUP
+
+CF --> CS
+CF --> COMM
+
+CS --> CARTE : find()
+SS --> CARTE : mise à jour stock
+PAS --> PAPI : cURL GET
+
+CR --> CARTE
+CR --> COLL_C : Doctrine ODM
+CMR --> COMM
+CMR --> COLL_CMD
+UR --> USER
+UR --> COLL_U
+SR --> SERIE
+SR --> COLL_S
+
+CARTE --> COLL_C
+COMM --> COLL_CMD
+USER --> COLL_U
+SERIE --> COLL_S
+
+HC --> TWIG : render()
+CC --> TWIG
+PC --> TWIG
+FORM --> TWIG
+
+MUP --> UR
+
+TWIG --> BS : HTML Response
+PC --> JS : JSON Response (AJAX)
+CC --> JS : JSON Response (AJAX)
+HC --> JS : JSON Response (AJAX)
+
+FS --> "public/uploads/" : stockage fichiers
+
+@enduml

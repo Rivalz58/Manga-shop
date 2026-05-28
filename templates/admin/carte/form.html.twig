@@ -1,0 +1,78 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}{{ titre }} — Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex align-items-center mb-4 gap-3">
+    <a href="{{ path('app_admin_carte_index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    <h2 class="fw-bold mb-0">{{ titre }}</h2>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        {{ form_start(form, {attr: {enctype: 'multipart/form-data', novalidate: 'novalidate'}}) }}
+        <div class="row g-3">
+            <div class="col-md-6">{{ form_row(form.nom) }}</div>
+            <div class="col-md-6">{{ form_row(form.serieId) }}</div>
+            <div class="col-md-4">{{ form_row(form.typePokemon) }}</div>
+            <div class="col-md-4">{{ form_row(form.rarete) }}</div>
+            <div class="col-md-2">{{ form_row(form.prix) }}</div>
+            <div class="col-md-2">{{ form_row(form.stock) }}</div>
+            <div class="col-md-3">{{ form_row(form.pv) }}</div>
+            <div class="col-md-3">{{ form_row(form.numeroPokedex) }}</div>
+            <div class="col-12">{{ form_row(form.description) }}</div>
+            <div class="col-md-6">
+                {{ form_row(form.imageFile) }}
+                {% if carte.image and carte.image != 'default-card.png' %}
+                <div class="mt-2">
+                    <small class="text-muted">Image actuelle :</small><br>
+                    <img src="{{ asset('uploads/cards/' ~ carte.image) }}" height="80" style="object-fit:contain">
+                </div>
+                {% endif %}
+            </div>
+
+            {# Bouton d'import depuis PokeAPI #}
+            {% if carte.nom %}
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Infos PokeAPI</label>
+                <button type="button" class="btn btn-outline-info btn-sm" onclick="fetchPokemonInfo()">
+                    <i class="bi bi-cloud-download me-1"></i>Importer depuis PokeAPI
+                </button>
+                <div id="pokemonApiResult" class="mt-2 small text-muted"></div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-save me-1"></i>Enregistrer
+            </button>
+            <a href="{{ path('app_admin_carte_index') }}" class="btn btn-outline-secondary">Annuler</a>
+        </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+async function fetchPokemonInfo() {
+    const nom = document.querySelector('input[name="carte[nom]"]')?.value?.toLowerCase();
+    if (!nom) { alert('Renseignez le nom d\'abord.'); return; }
+    try {
+        const res = await fetch(`/api/pokemon-info/${encodeURIComponent(nom)}`);
+        if (!res.ok) { document.getElementById('pokemonApiResult').textContent = 'Pokémon non trouvé dans l\'API.'; return; }
+        const data = await res.json();
+        const result = document.getElementById('pokemonApiResult');
+        result.innerHTML = `<strong>Trouvé :</strong> ${data.nom} — Types : ${data.types.join(', ')}`;
+
+        // Auto-remplir PV si disponible
+        const hp = data.stats?.find(s => s.nom === 'hp');
+        if (hp) {
+            const pvInput = document.querySelector('input[name="carte[pv]"]');
+            if (pvInput) pvInput.value = hp.valeur;
+        }
+    } catch(e) { document.getElementById('pokemonApiResult').textContent = 'Erreur API.'; }
+}
+</script>
+{% endblock %}

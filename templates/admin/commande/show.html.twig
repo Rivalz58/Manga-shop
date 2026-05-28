@@ -1,0 +1,84 @@
+{% extends 'admin/base.html.twig' %}
+{% block title %}Commande {{ commande.reference }} — Admin{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ path('app_admin_commande_index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+    <h2 class="fw-bold mb-0">Commande {{ commande.reference }}</h2>
+</div>
+<div class="row g-4">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold">Articles commandés</div>
+            <div class="table-responsive">
+                <table class="table mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr><th>Carte</th><th class="text-center">Qté</th><th class="text-center">Prix unit.</th><th class="text-center">Sous-total</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for ligne in commande.lignes %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ asset('uploads/cards/' ~ ligne.carteImage) }}" width="40" height="40" style="object-fit:contain">
+                                    <strong>{{ ligne.carteNom }}</strong>
+                                </div>
+                            </td>
+                            <td class="text-center">{{ ligne.quantite }}</td>
+                            <td class="text-center">{{ ligne.prixUnitaire|number_format(2, ',', ' ') }} €</td>
+                            <td class="text-center fw-bold text-danger">{{ ligne.sousTotal|number_format(2, ',', ' ') }} €</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-bold fs-5 table-light">
+                            <td colspan="3">Total</td>
+                            <td class="text-center text-danger">{{ commande.total|number_format(2, ',', ' ') }} €</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header fw-bold">Informations client</div>
+            <div class="card-body">
+                <table class="table table-sm table-borderless mb-0">
+                    <tr><th>Nom</th><td>{{ commande.clientNom }}</td></tr>
+                    <tr><th>Email</th><td>{{ commande.clientEmail }}</td></tr>
+                    <tr><th>Adresse</th><td>{{ commande.adresseLivraison }}</td></tr>
+                    <tr><th>Date</th><td>{{ commande.createdAt|date('d/m/Y H:i') }}</td></tr>
+                    {% if commande.noteLivraison %}<tr><th>Note</th><td>{{ commande.noteLivraison }}</td></tr>{% endif %}
+                </table>
+            </div>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold">Statut de la commande</div>
+            <div class="card-body">
+                <select id="statutSelect" class="form-select mb-3">
+                    {% for s in statuts %}
+                    <option value="{{ s }}" {{ commande.statut == s ? 'selected' : '' }}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn btn-success w-100" onclick="updateStatut('{{ commande.id }}')">
+                    <i class="bi bi-save me-1"></i>Mettre à jour
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+async function updateStatut(id) {
+    const statut = document.getElementById('statutSelect').value;
+    const fd = new FormData(); fd.append('statut', statut);
+    const res = await fetch(`/admin/commandes/${id}/statut`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) { alert('Statut mis à jour : ' + statut); }
+    else { alert('Erreur : ' + (data.error ?? 'Inconnue')); }
+}
+</script>
+{% endblock %}
