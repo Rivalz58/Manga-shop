@@ -34,7 +34,7 @@
             <tbody>
                 {% for carte in cartes %}
                 <tr>
-                    <td><img src="{{ asset('uploads/cards/' ~ carte.image) }}" width="45" height="45" style="object-fit:contain" onerror="this.src='https://via.placeholder.com/45'"></td>
+                    <td><img src="{{ asset('uploads/cards/' ~ carte.image) }}" width="45" height="45" style="object-fit:contain" onerror="this.onerror=null;this.src='/images/placeholder.svg'"></td>
                     <td class="fw-semibold">
                         <a href="{{ path('app_carte_show', {id: carte.id}) }}" target="_blank" class="text-dark text-decoration-none">{{ carte.nom }}</a>
                     </td>

@@ -27,7 +27,7 @@
                                     <div class="d-flex align-items-center gap-3">
                                         <img src="{{ asset('uploads/cards/' ~ item.carte.image) }}"
                                              width="60" height="60" style="object-fit:contain"
-                                             onerror="this.src='https://via.placeholder.com/60'">
+                                             onerror="this.onerror=null;this.src='/images/placeholder.svg'">
                                         <div>
                                             <a href="{{ path('app_carte_show', {id: item.carte.id}) }}"
                                                class="fw-bold text-dark text-decoration-none">{{ item.carte.nom }}</a>

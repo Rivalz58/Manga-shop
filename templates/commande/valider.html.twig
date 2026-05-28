@@ -28,7 +28,7 @@
                     {% for item in items %}
                     <div class="d-flex align-items-center gap-2 p-3 border-bottom">
                         <img src="{{ asset('uploads/cards/' ~ item.carte.image) }}" width="45" height="45" style="object-fit:contain"
-                             onerror="this.src='https://via.placeholder.com/45'">
+                             onerror="this.onerror=null;this.src='/images/placeholder.svg'">
                         <div class="flex-grow-1">
                             <div class="fw-semibold small">{{ item.carte.nom }}</div>
                             <div class="text-muted" style="font-size:.75rem">× {{ item.quantite }}</div>

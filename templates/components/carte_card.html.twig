@@ -1,7 +1,7 @@
 <div class="card card-pokemon h-100">
     <a href="{{ path('app_carte_show', {id: carte.id}) }}">
         <img src="{{ asset('uploads/cards/' ~ carte.image) }}"
-             onerror="this.src='https://via.placeholder.com/200x200/eee/999?text=No+Image'"
+             onerror="this.onerror=null;this.src='/images/placeholder.svg'"
              alt="{{ carte.nom }}" class="card-img-top">
     </a>
     <div class="card-body d-flex flex-column p-3">

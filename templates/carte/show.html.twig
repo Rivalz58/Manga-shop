@@ -16,7 +16,7 @@
         <div class="col-md-4 text-center">
             <div class="card shadow-sm p-4">
                 <img src="{{ asset('uploads/cards/' ~ carte.image) }}"
-                     onerror="this.src='https://via.placeholder.com/300x420/eee/999?text={{ carte.nom|url_encode }}'"
+                     onerror="this.onerror=null;this.src='/images/placeholder.svg'"
                      alt="{{ carte.nom }}" class="img-fluid" style="max-height:400px;object-fit:contain" id="carteImage">
                 {% if pokemonData and pokemonData.sprites is defined %}
                 <button class="btn btn-sm btn-outline-secondary mt-2" onclick="toggleSprite()">
@@ -170,7 +170,7 @@
             <div class="card mb-2 shadow-sm">
                 <div class="d-flex align-items-center p-2 gap-2">
                     <img src="{{ asset('uploads/cards/' ~ c.image) }}" width="50" height="50"
-                         style="object-fit:contain" onerror="this.src='https://via.placeholder.com/50'">
+                         style="object-fit:contain" onerror="this.onerror=null;this.src='/images/placeholder.svg'">
                     <div>
                         <div class="fw-bold small">
                             <a href="{{ path('app_carte_show', {id: c.id}) }}" class="text-dark text-decoration-none">{{ c.nom }}</a>
