@@ -78,6 +78,8 @@ class PokemonApiService
             CURLOPT_USERAGENT => 'PokemonShop/1.0',
             CURLOPT_HTTPHEADER => ['Accept: application/json'],
             CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
         ]);
 
         $response = curl_exec($ch);

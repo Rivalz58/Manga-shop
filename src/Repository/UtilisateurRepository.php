@@ -47,7 +47,7 @@ class UtilisateurRepository extends DocumentRepository
             $qb->field('roles')->equals($filters['role']);
         }
 
-        $total = (clone $qb)->getQuery()->count();
+        $total = (int) (clone $qb)->count()->getQuery()->execute();
         $qb->sort('createdAt', -1)->skip(($page - 1) * $limit)->limit($limit);
 
         return [
