@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ODM\Document(collection: 'cartes')]
+#[ODM\Document(collection: 'cartes', repositoryClass: \App\Repository\CarteRepository::class)]
 #[ODM\Index(keys: ['nom' => 'text', 'typePokemon' => 'text'], name: 'search_index')]
 #[ODM\Index(keys: ['rarete' => 'asc', 'prix' => 'asc'])]
 class Carte

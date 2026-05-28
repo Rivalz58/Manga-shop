@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ODM\Document(collection: 'series')]
+#[ODM\Document(collection: 'series', repositoryClass: \App\Repository\SerieRepository::class)]
 #[ODM\Index(keys: ['nom' => 'asc'])]
 class Serie
 {

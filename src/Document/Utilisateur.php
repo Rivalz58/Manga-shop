@@ -7,7 +7,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ODM\Document(collection: 'utilisateurs')]
+#[ODM\Document(collection: 'utilisateurs', repositoryClass: \App\Repository\UtilisateurRepository::class)]
 #[ODM\Index(keys: ['email' => 'asc'], options: ['unique' => true])]
 class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 {

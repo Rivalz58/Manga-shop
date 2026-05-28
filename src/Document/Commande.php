@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[ODM\Document(collection: 'commandes')]
+#[ODM\Document(collection: 'commandes', repositoryClass: \App\Repository\CommandeRepository::class)]
 #[ODM\Index(keys: ['createdAt' => 'desc'])]
 #[ODM\Index(keys: ['statut' => 'asc'])]
 class Commande
