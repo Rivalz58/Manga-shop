@@ -31,7 +31,7 @@ class DashboardController extends AbstractController
         $caPotentiel = $carteRepo->getChiffreAffairesPotentielParType();
         $notesParRarete = $carteRepo->getDistributionNotesParRarete();
 
-        $nbCartes = $this->dm->getRepository(Carte::class)->count([]);
+        $nbCartes = (int) $carteRepo->createQueryBuilder()->count()->getQuery()->execute();
         $nbCommandesEnAttente = $commandeRepo->countByStatut('En attente');
 
         return $this->render('admin/dashboard.html.twig', [

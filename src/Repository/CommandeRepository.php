@@ -44,7 +44,7 @@ class CommandeRepository extends DocumentRepository
 
         $qb->sort('createdAt', -1);
 
-        $total = (clone $qb)->getQuery()->count();
+        $total = (int) (clone $qb)->count()->getQuery()->execute();
         $qb->skip(($page - 1) * $limit)->limit($limit);
 
         return [
@@ -99,9 +99,10 @@ class CommandeRepository extends DocumentRepository
 
     public function countByStatut(string $statut): int
     {
-        return $this->createQueryBuilder()
+        return (int) $this->createQueryBuilder()
             ->field('statut')->equals($statut)
+            ->count()
             ->getQuery()
-            ->count();
+            ->execute();
     }
 }
