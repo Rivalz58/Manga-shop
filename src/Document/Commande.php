@@ -84,7 +84,7 @@ class Commande
     public function getReference(): string { return $this->reference; }
 
     public function getNoteLivraison(): string { return $this->noteLivraison; }
-    public function setNoteLivraison(string $note): static { $this->noteLivraison = $note; return $this; }
+    public function setNoteLivraison(?string $note): static { $this->noteLivraison = $note ?? ''; return $this; }
 
     public function getCreatedAt(): \DateTime { return $this->createdAt; }
 
