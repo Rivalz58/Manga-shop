@@ -28,7 +28,7 @@ class SerieType extends AbstractType
                 'label' => 'Image',
                 'mapped' => false,
                 'required' => false,
-                'constraints' => [new Image(['maxSize' => '2M'])],
+                'constraints' => [new Image(maxSize: '2M')],
             ]);
     }
 
