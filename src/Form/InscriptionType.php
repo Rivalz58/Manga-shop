@@ -28,8 +28,8 @@ class InscriptionType extends AbstractType
                 'second_options' => ['label' => 'Confirmer le mot de passe'],
                 'invalid_message' => 'Les mots de passe ne correspondent pas.',
                 'constraints' => [
-                    new NotBlank(['message' => 'Le mot de passe est obligatoire.']),
-                    new Length(['min' => 8, 'minMessage' => 'Minimum 8 caractères.']),
+                    new NotBlank(message: 'Le mot de passe est obligatoire.'),
+                    new Length(min: 8, minMessage: 'Minimum 8 caractères.'),
                 ],
             ])
             ->add('adresse', TextType::class, ['label' => 'Adresse', 'required' => false])

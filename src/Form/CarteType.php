@@ -77,11 +77,11 @@ class CarteType extends AbstractType
                 'mapped' => false,
                 'required' => false,
                 'constraints' => [
-                    new Image([
-                        'maxSize' => '2M',
-                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/webp'],
-                        'mimeTypesMessage' => 'Format accepté : JPG, PNG, WebP',
-                    ]),
+                    new Image(
+                        maxSize: '2M',
+                        mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+                        mimeTypesMessage: 'Format accepté : JPG, PNG, WebP',
+                    ),
                 ],
             ]);
     }
