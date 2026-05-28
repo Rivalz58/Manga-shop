@@ -69,10 +69,10 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function getNomComplet(): string { return $this->prenom . ' ' . $this->nom; }
 
     public function getAdresse(): string { return $this->adresse; }
-    public function setAdresse(string $adresse): static { $this->adresse = $adresse; return $this; }
+    public function setAdresse(?string $adresse): static { $this->adresse = $adresse ?? ''; return $this; }
 
     public function getTelephone(): string { return $this->telephone; }
-    public function setTelephone(string $telephone): static { $this->telephone = $telephone; return $this; }
+    public function setTelephone(?string $telephone): static { $this->telephone = $telephone ?? ''; return $this; }
 
     public function getRoles(): array
     {

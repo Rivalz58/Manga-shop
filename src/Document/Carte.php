@@ -92,7 +92,7 @@ class Carte
     public function setStock(int $stock): static { $this->stock = $stock; return $this; }
 
     public function getDescription(): string { return $this->description; }
-    public function setDescription(string $desc): static { $this->description = $desc; return $this; }
+    public function setDescription(?string $desc): static { $this->description = $desc ?? ''; return $this; }
 
     public function getImage(): string { return $this->image; }
     public function setImage(string $image): static { $this->image = $image; return $this; }

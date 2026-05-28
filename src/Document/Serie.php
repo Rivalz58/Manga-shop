@@ -43,7 +43,7 @@ class Serie
     public function getAnnee(): int { return $this->annee; }
     public function setAnnee(int $annee): static { $this->annee = $annee; return $this; }
     public function getDescription(): string { return $this->description; }
-    public function setDescription(string $description): static { $this->description = $description; return $this; }
+    public function setDescription(?string $description): static { $this->description = $description ?? ''; return $this; }
     public function getImage(): string { return $this->image; }
     public function setImage(string $image): static { $this->image = $image; return $this; }
     public function getCreatedAt(): \DateTime { return $this->createdAt; }
